@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Middleware\IsAdmin;
+use Illuminate\Support\Str;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController; // ✅ Import controller admin pesanan
 
 // ========== AUTH ==========
@@ -13,7 +14,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->middleware('guest');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
-
+Route::view('/profil', 'profil')->middleware('auth');
 // ========== USER ROUTES ==========
 
 Route::get('/', [ProductController::class, 'index']);
@@ -43,7 +44,8 @@ Route::middleware(['auth', IsAdmin::class])->prefix('admin')->group(function () 
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::post('/orders/{id}/confirm', [AdminOrderController::class, 'confirm']);
     Route::post('/orders/{id}/cancel', [AdminOrderController::class, 'cancel']); // ← INI WAJIB ADA
-    Route::get('/admin/orders/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('admin.orders.show');
+    Route::get('/admin/orders/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
+
 
 });
 

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <h2 class="text-xl font-bold mb-4">Kelola Produk</h2>
