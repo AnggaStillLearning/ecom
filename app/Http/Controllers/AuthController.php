@@ -9,59 +9,89 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /**
+     * Tampilkan halaman login.
+     */
     public function showLogin()
     {
         return view('auth.login');
     }
 
+    /**
+     * Tampilkan halaman registrasi.
+     */
     public function showRegister()
     {
         return view('auth.register');
     }
 
+    /**
+     * Proses registrasi pengguna baru.
+     */
     public function register(Request $request)
     {
+        // Validasi input user
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|confirmed|min:6',
         ]);
 
+        // Buat user baru dan hash password-nya
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => 'user'
+            'role' => 'user' // Role default adalah user biasa
         ]);
 
+        // Login otomatis setelah registrasi
         Auth::login($user);
+
+        // Redirect ke halaman utama
         return redirect('/');
     }
 
+    /**
+     * Proses login pengguna.
+     */
     public function login(Request $request)
-{
-    $credentials = $request->only('email', 'password');
+    {
+        // Ambil kredensial dari form
+        $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $user = Auth::user();
+        // Coba login menggunakan Auth::attempt
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
 
-        if ($user->role === 'admin') {
-            return redirect('/admin/products');
+            // Cek role pengguna
+            if ($user->role === 'admin') {
+                return redirect('/admin/products');
+            }
+
+            // Redirect default untuk role lain (user/pembeli)
+            return redirect('/');
         }
 
-        return redirect('/');
+        // Jika gagal login, kembali dengan error
+        return back()->withErrors([
+            'email' => 'Email atau password salah'
+        ]);
     }
 
-    return back()->withErrors(['email' => 'Email atau password salah']);
-}
+    /**
+     * Proses logout pengguna.
+     */
     public function logout(Request $request)
-{
-    auth()->logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+    {
+        // Logout user
+        auth()->logout();
 
-    return redirect('/')->with('success', 'Berhasil logout');
+        // Invalidate dan regenerate session
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Redirect ke beranda dengan pesan sukses
+        return redirect('/')->with('success', 'Berhasil logout');
+    }
 }
-
-}
-
