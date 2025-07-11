@@ -34,6 +34,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'price' => $product->price,
                 'quantity' => 1,
+                'image' => $product->image, // Tambahkan image ke keranjang (opsional)
             ];
         }
 
@@ -75,6 +76,7 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
+            // Simpan gambar ke storage/app/public/products
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
@@ -105,6 +107,7 @@ class ProductController extends Controller
                 Storage::disk('public')->delete($product->image);
             }
 
+            // Simpan gambar baru
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
